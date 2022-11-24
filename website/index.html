@@ -19,7 +19,13 @@
         <input type="range" id="green" value="0" min="0" max="3" onchange="updateColor()">
         <input type="range" id="blue" value="0" min="0" max="3" onchange="updateColor()">
       </div>
-      <div id="currentcolor"></div>
+      <div id="current-color"></div>
+      <div id="choose-place">
+        <label>
+          <select id="place-options" onchange="updatePlace()">
+          </select>
+        </label>
+      </div>
     </footer>
     <script src="script.js"></script>
   </body>

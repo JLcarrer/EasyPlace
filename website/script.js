@@ -3,21 +3,42 @@ let ctx = canvas.getContext('2d');
 let redRange = document.getElementById("red");
 let greenRange = document.getElementById("green");
 let blueRange = document.getElementById("blue");
-let currentColor = document.getElementById("currentcolor");
+let currentColor = document.getElementById("current-color");
+let placeOptions = document.getElementById("place-options");
 let maxZoom = 64;
 let minZoom = 2;
 let currentzoom = 1;
 const palette = [0, 85, 170, 255];
-const url = "http://10.212.205.152:6942";
+const url = "http://10.212.205.152:6942/";
 let place = new Array(256);
+let places = [];
+let currentPlace;
 
 canvas.width = 256
 canvas.height = 256
 
-getPlace();
+getPlaces();
 
-function getPlace(){
-    fetch(url + "/place")
+function getPlaces(){
+    fetch(url + "places")
+    .then(res => res.text())
+    .then(text => {
+        places = text.split(",");
+        for(let i = 0; i < places.length; i++){
+            let option = document.createElement("option");
+            option.value = i.toString();
+            option.text = places[i];
+            placeOptions.appendChild(option);
+        }
+    })
+    .then(() => {
+        getPlace(places[0]);
+        currentPlace = places[0];
+    });
+}
+
+function getPlace(name){
+    fetch(url + name)
     .then(res => res.text())
     .then(text => {
         let index = 0;
@@ -37,7 +58,7 @@ function getPlace(){
 }
 
 function setPixel(x, y, r, g, b){
-    fetch(url + "/set/" + x + "/" + y + "/" + r + "/" + g + "/" + b)
+    fetch(url + currentPlace + "/set/" + x + "/" + y + "/" + r + "/" + g + "/" + b)
     .then(res => res.text())
     .then(text => {
         console.log(text);
@@ -56,6 +77,11 @@ function updateColor(){
     let g = palette[greenRange.value];
     let b = palette[blueRange.value];
     currentColor.style.backgroundColor = "rgb(" + r + "," + g + ", " + b + ")";
+}
+
+function updatePlace(){
+    currentPlace = places[placeOptions.value];
+    getPlace(currentPlace);
 }
 
 canvas.addEventListener('wheel', (e) => {

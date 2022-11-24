@@ -11,8 +11,16 @@
   <body>
     <br><br><br><br><br><br><br><br><br><br><br><br><br>
     <div style = "text-align:center;">
-        <canvas width="256" height="256" id="canvas"></canvas>    
+        <canvas width="256" height="256" id="canvas"></canvas>
     </div>
+    <footer>
+      <div id="colorpicker">
+        <input type="range" id="red" value="0" min="0" max="3" onchange="updateColor()">
+        <input type="range" id="green" value="0" min="0" max="3" onchange="updateColor()">
+        <input type="range" id="blue" value="0" min="0" max="3" onchange="updateColor()">
+      </div>
+      <div id="currentcolor"></div>
+    </footer>
     <script src="script.js"></script>
   </body>
 </html>

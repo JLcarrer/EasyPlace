@@ -1,5 +1,9 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext('2d');
+let redRange = document.getElementById("red");
+let greenRange = document.getElementById("green");
+let blueRange = document.getElementById("blue");
+let currentColor = document.getElementById("currentcolor");
 let maxZoom = 64;
 let minZoom = 2;
 let currentzoom = 1;
@@ -47,11 +51,18 @@ function setPixel(x, y, r, g, b){
     });
 }
 
+function updateColor(){
+    let r = palette[redRange.value];
+    let g = palette[greenRange.value];
+    let b = palette[blueRange.value];
+    currentColor.style.backgroundColor = "rgb(" + r + "," + g + ", " + b + ")";
+}
+
 canvas.addEventListener('wheel', (e) => {
     var width = canvas.offsetWidth;
     var height = canvas.offsetHeight;
-    var x = e.offsetX; 
-    var y = e.offsetY; 
+    var x = e.offsetX;
+    var y = e.offsetY;
     var xpercent = (x*100/width);
     var ypercent = (y*100/height);
     currentzoom = e.wheelDelta > 0 ? currentzoom * 2 : currentzoom / 2;
@@ -64,5 +75,5 @@ canvas.addEventListener('mousedown', (e) => {
     let rect = canvas.getBoundingClientRect();
     let x = Math.floor((e.clientX - rect.left) / currentzoom);
     let y = Math.floor((e.clientY - rect.top) / currentzoom);
-    setPixel(x, y, 0, 0, 0);
+    setPixel(x, y, redRange.value, greenRange.value, blueRange.value);
 });

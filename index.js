@@ -6,7 +6,7 @@ const { Server } = require("socket.io");
 const io = new Server(server, {cors: {origin: '*'}});
 
 const socketPort = 6942;
-const expressPort = 80;
+const expressPort = 8080;
 
 var places = {};
 

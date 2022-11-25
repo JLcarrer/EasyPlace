@@ -20,8 +20,8 @@ let currentzoom = 1;
 const palette = [0, 64, 128, 255];
 
 //Socket.IO
-const url = "localhost:6942/";
-var socket = io("localhost:6942");
+const url = "http://easeplace.onrender.com:6942/";
+var socket = io(url);
 
 //Places infos
 let place = new Array(256);

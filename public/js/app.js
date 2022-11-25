@@ -20,13 +20,15 @@ let currentzoom = 1;
 const palette = [0, 64, 128, 255];
 
 //Socket.IO
-const url = "http://easeplace.onrender.com:6942/";
+const url = "http://localhost:6942/";
 var socket = io(url);
 
 //Places infos
 let place = new Array(256);
 let placesName = [];
 let currentPlaceName;
+
+let oldHighlight = {x: 0, y: 0};
 
 //Set canvas size
 canvas.width = 256
@@ -113,4 +115,22 @@ canvas.addEventListener('mousedown', (e) => {
     let y = Math.floor((e.clientY - rect.top) / currentzoom);
     //Send pixel update to server
     socket.emit("setpixel", currentPlaceName, x, y, redRange.value, greenRange.value, blueRange.value);
+});
+
+//Highlight pixel on mouse move
+canvas.addEventListener('mousemove', (e) => {
+    let rect = canvas.getBoundingClientRect();
+    let x = Math.floor((e.clientX - rect.left) / currentzoom);
+    let y = Math.floor((e.clientY - rect.top) / currentzoom);
+    if((x != oldHighlight.x || y != oldHighlight.y)){
+        if(place[oldHighlight.x] != undefined && place[oldHighlight.x][oldHighlight.y] != undefined){
+            let color = place[oldHighlight.x][oldHighlight.y];
+            ctx.fillStyle = "rgb(" + palette[color[0]] + "," + palette[color[1]] + ", " + palette[color[2]] + ")";
+            ctx.fillRect(oldHighlight.x, oldHighlight.y, 1, 1);
+            ctx.fillStyle = "rgb(" + palette[redRange.value] + "," + palette[greenRange.value] + ", " + palette[blueRange.value] + ")";
+            ctx.fillRect(x, y, 1, 1);
+            oldHighlight.x = x;
+            oldHighlight.y = y;
+        }
+    }
 });

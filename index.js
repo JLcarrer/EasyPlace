@@ -1,9 +1,12 @@
 const express = require('express');
 const app = express();
+const http = require('http');
+const server = http.createServer(app);
 const port = 6942;
-const mode = "white";
 
 var places = {};
+
+app.use(express.static("public"));
 
 app.get('/places', (req, res) => {
     let ret = "";
@@ -69,6 +72,11 @@ class Place{
                     place[i][j][0] = 3;
                     place[i][j][1] = 3;
                     place[i][j][2] = 3;
+                } else if (this.mode == "noise") {
+                    let noise = Math.floor((Math.sin(i / 16)) + (Math.sin(j / 16)) + 2);
+                    place[i][j][0] = noise;
+                    place[i][j][1] = noise;
+                    place[i][j][2] = noise;
                 }
             }
         }
@@ -99,3 +107,4 @@ class Place{
 places["white"] = new Place("white", 256, "white")
 places["random"] = new Place("random", 256, "random");
 places["palette"] = new Place("palette", 256, "palette");
+places["noise"] = new Place("noise", 256, "noise");

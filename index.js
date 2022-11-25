@@ -2,49 +2,58 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
-const port = 6942;
+const { Server } = require("socket.io");
+const io = new Server(server, {cors: {origin: '*'}});
+
+const socketPort = 6942;
+const expressPort = 80;
 
 var places = {};
 
-app.use(express.static("public"));
+//User instance for each socket
+io.on('connection', (socket) => {
+    console.log('a user connected');
 
-app.get('/places', (req, res) => {
-    let ret = "";
-    res.header("Access-Control-Allow-Origin", "*");
-    for (const [key, value] of Object.entries(places)) {
-        ret += value.name + ",";
-    }
-    ret = ret.slice(0, -1);
-    res.send(ret);
+    //Send places names to user
+    socket.on('places', () => {
+        console.log("User ask places");
+        let ret = [];
+        let i = 0;
+        for (const [key, value] of Object.entries(places)) {
+            ret[i] = key;
+            i++;
+        }
+        console.log(ret);
+        socket.emit('places', ret);
+    });
+
+    //Send place string to user
+    socket.on('place', (place) => {
+        console.log("User ask place " + place);
+        if (place in places) {
+            socket.emit('place', places[place].strPlace);
+        } else {
+            socket.emit('place', "KO");
+        }
+    });
+
+    //Set pixel in place array and send the update to all users
+    socket.on('setpixel', (place, x, y, r, g, b) => {
+        places[place].setPixel(x, y, r, g, b);
+        io.emit('setpixel', place, x, y, r, g, b);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
 });
 
-app.get('/:place', (req, res) => {
-    console.log("User try connected to " + req.params.place + " : " + req.headers.host + " " + req.headers['user-agent']);
-    res.header("Access-Control-Allow-Origin", "*");
-    if (req.params.place in places) {
-        res.send(places[req.params.place].strPlace);
-    } else {
-        res.send("KO");
-    }
-});
+//Return index.html and other files in public folder
+app.use(express.static('public'));
 
-app.get('/:place/set/:x/:y/:r/:g/:b', (req, res) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    if (req.params.place in places) {
-        let x = parseInt(req.params.x);
-        let y = parseInt(req.params.y);
-        let r = parseInt(req.params.r);
-        let g = parseInt(req.params.g);
-        let b = parseInt(req.params.b);
-        console.log("New pixel: (" + x + ", " + y + "), (" + r + ", " + g + ", " + b +")");
-        places[req.params.place].setPixel(x, y, r, g, b);
-        res.send("OK");
-    } else {
-        res.send("KO");
-    }
-});
-
-app.listen(port, () => console.log(`Listening on port ${port}!`));
+//Listen to the ports
+app.listen(expressPort, () => console.log(`Express listening on port ${expressPort}!`));
+server.listen(socketPort, () => console.log(`SocketIO listening on port ${socketPort}!`));
 
 class Place{
     constructor(name, width, mode){
@@ -54,6 +63,7 @@ class Place{
         this.generatePlace();
     }
 
+    //Generate and fill place array for testing
     generatePlace(){
         var place = new Array(256);
         for(let i = 0; i < 256; i++){
@@ -83,6 +93,7 @@ class Place{
         this.place = place;
     }
 
+    //Generate place string for sending to user
     get strPlace(){
         var str = "";
     
@@ -97,6 +108,7 @@ class Place{
         return str;
     }
 
+    //Edit pixel in place array
     setPixel(x, y, r, g, b){
         this.place[x][y][0] = r;
         this.place[x][y][1] = g;

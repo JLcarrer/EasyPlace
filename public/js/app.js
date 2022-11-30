@@ -20,7 +20,7 @@ let currentzoom = 1;
 const palette = [0, 64, 128, 255];
 
 //Socket.IO
-const url = "http://localhost:6942/";
+const url = "http://localhost:4242/";
 var socket = io(url);
 
 //Places infos
@@ -70,7 +70,7 @@ socket.on("place", (data) => {
 
 //Get pixel update from server and draw it
 socket.on("setpixel", (placeName, x, y, r, g, b) => {
-    if(placeName == currentPlaceName){
+    if(placeName === currentPlaceName){
         ctx.fillStyle = "rgb(" + palette[r] + "," + palette[g] + ", " + palette[b] + ")";
         ctx.fillRect(x, y, 1, 1);
         place[x][y][0] = r;
@@ -122,8 +122,8 @@ canvas.addEventListener('mousemove', (e) => {
     let rect = canvas.getBoundingClientRect();
     let x = Math.floor((e.clientX - rect.left) / currentzoom);
     let y = Math.floor((e.clientY - rect.top) / currentzoom);
-    if((x != oldHighlight.x || y != oldHighlight.y)){
-        if(place[oldHighlight.x] != undefined && place[oldHighlight.x][oldHighlight.y] != undefined){
+    if((x !== oldHighlight.x || y !== oldHighlight.y)){
+        if(place[oldHighlight.x] !== undefined && place[oldHighlight.x][oldHighlight.y] !== undefined){
             let color = place[oldHighlight.x][oldHighlight.y];
             ctx.fillStyle = "rgb(" + palette[color[0]] + "," + palette[color[1]] + ", " + palette[color[2]] + ")";
             ctx.fillRect(oldHighlight.x, oldHighlight.y, 1, 1);

@@ -1,11 +1,26 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server, {cors: {origin: '*'}});
+var mysql = require('mysql');
+var connection = mysql.createConnection({
+    host: '127.0.0.1',
+    user: 'easyplace',
+    password: process.env.MYSQLPASSWORD
+});
 
-const socketPort = 6942;
+connection.connect(function(err) {
+    if (err) {
+        console.error('error connecting: ' + err.stack);
+        return;
+    }
+    console.log('connected as id ' + connection.threadId);
+});
+
+const socketPort = 4242;
 const expressPort = 8080;
 
 var places = {};
@@ -39,6 +54,7 @@ io.on('connection', (socket) => {
 
     //Set pixel in place array and send the update to all users
     socket.on('setpixel', (place, x, y, r, g, b) => {
+        console.log("User set pixel " + x + " " + y + " " + r + " " + g + " " + b + " in place " + place);
         places[place].setPixel(x, y, r, g, b);
         io.emit('setpixel', place, x, y, r, g, b);
     });
@@ -70,19 +86,19 @@ class Place{
             place[i] = new Array(256);
             for(let j = 0; j < 256; j++){
                 place[i][j] = new Array(3);
-                if(this.mode == "random"){
+                if(this.mode === "random"){
                     place[i][j][0] = Math.floor(Math.random() * 4);
                     place[i][j][1] = Math.floor(Math.random() * 4);
                     place[i][j][2] = Math.floor(Math.random() * 4);
-                } else if (this.mode == "palette") {
+                } else if (this.mode === "palette") {
                     place[i][j][0] = Math.floor(i / 64);
                     place[i][j][1] = Math.floor(j / 64);
                     place[i][j][2] = Math.floor(i / 16) % 4;
-                } else if (this.mode == "white") {
+                } else if (this.mode === "white") {
                     place[i][j][0] = 3;
                     place[i][j][1] = 3;
                     place[i][j][2] = 3;
-                } else if (this.mode == "noise") {
+                } else if (this.mode === "noise") {
                     let noise = Math.floor((Math.sin(i / 16)) + (Math.sin(j / 16)) + 2);
                     place[i][j][0] = noise;
                     place[i][j][1] = noise;
@@ -94,6 +110,7 @@ class Place{
     }
 
     //Generate place string for sending to user
+    //To replace
     get strPlace(){
         var str = "";
     
@@ -104,7 +121,23 @@ class Place{
                 }
             }
         }
-    
+
+        console.log(this.encode);
+        return str;
+    }
+
+    //Encode place in base64
+    get encode(){
+        //Up to 18bit color
+        const table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        var str = "";
+        for(let i = 0; i < 256; i++){
+            for(let j = 0; j < 256; j++){
+                for(let k = 0; k < 3; k++){
+                    str += table[this.place[i][j][k]];
+                }
+            }
+        }
         return str;
     }
 
